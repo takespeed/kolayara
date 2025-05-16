@@ -11,7 +11,7 @@ void main() {
 
 class Contact {
   String name;
-  // String name;dd
+  //Yeni branch(3. branch)
   String phone;
   File? image;
 
