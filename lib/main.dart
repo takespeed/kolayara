@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MainApp());
@@ -137,10 +139,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _callContact(String phone) async {
-    final uri = Uri.parse('tel:$phone');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
+  static const platform = MethodChannel('direct_call_channel');
+
+  Future<void> _callContact(String phone) async {
+    // İzin kontrolü ve isteme
+    var status = await Permission.phone.status;
+    if (!status.isGranted) {
+      status = await Permission.phone.request();
+      if (!status.isGranted) return;
+    }
+    try {
+      await platform.invokeMethod('directCall', {'phone': phone});
+    } on PlatformException catch (e) {
+      // Hata yönetimi
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Arama başlatılamadı: ${e.message}')),
+      );
     }
   }
 
