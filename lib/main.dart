@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'package:image_editor_plus/image_editor_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
   runApp(const MainApp());
@@ -317,9 +319,23 @@ class _ContactFormState extends State<ContactForm> {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source);
     if (picked != null) {
-      setState(() {
-        _image = File(picked.path);
-      });
+      final bytes = await picked.readAsBytes();
+      final edited = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageCropper(
+            image: bytes,
+          ),
+        ),
+      );
+      if (edited != null && edited is Uint8List) {
+        final tempDir = await getTemporaryDirectory();
+        final file = await File('${tempDir.path}/edited_${DateTime.now().millisecondsSinceEpoch}.png').create();
+        await file.writeAsBytes(edited);
+        setState(() {
+          _image = file;
+        });
+      }
     }
   }
 
