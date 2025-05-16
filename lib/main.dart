@@ -11,7 +11,7 @@ void main() {
 
 class Contact {
   String name;
-  // String name;
+  // String name;dd
   String phone;
   File? image;
 
